@@ -7,10 +7,10 @@ app = Flask(__name__)
 # Подключение к базе данных
 def db_connect():
     conn = psycopg2.connect(
-        host='127.0.0.1',
-        database='olga_barkhatova_knowledge_bace',
-        user='olga_barkhatova_knowledge_bace',
-        password='123'
+        host='olyabarkhatoova.mysql.pythonanywhere-services.com',
+        database='olyabarkhatoova$default',
+        user='olyabarkhatoova',
+        password='1234'
     )
     cur = conn.cursor(cursor_factory=RealDictCursor)
     return conn, cur
