@@ -322,29 +322,3 @@ def edit_profile():
     db_close(conn, cur)
     return render_template('edit_profile.html', user=user)
 
-
-
-
-
-# @app.route('/edit_ad/<int:ad_id>', methods=['GET', 'POST'])
-# def edit_ad(ad_id):
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-
-#     conn, cur = db_connect()
-#     cur.execute("SELECT * FROM ads WHERE id=%s;", (ad_id,))
-#     ad = cur.fetchone()
-
-#     if ad is None or ad['user_id'] != session['user_id']:
-#         return redirect(url_for('main'))  # Если это не ваше объявление, перенаправляем
-
-#     if request.method == 'POST':
-#         title = request.form['title']
-#         content = request.form['content']
-#         cur.execute("UPDATE ads SET title=%s, content=%s WHERE id=%s;", (title, content, ad_id))
-#         db_close(conn, cur)
-#         return redirect(url_for('main'))  # Перенаправляем на главную страницу после обновления
-
-#     db_close(conn, cur)
-#     return render_template('edit_ad.html', ad=ad)
-
