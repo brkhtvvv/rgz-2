@@ -29,13 +29,19 @@
 
         <h2>Объявления</h2>
 
-        {% for ad in ads %}
-            <div class="ads-card">
-                <h3>{{ ad.title }}</h3>
-                <p>{{ ad.content }}</p>
-                <p class="author">Автор: {{ ad.author }}{% if ad.email %} ({{ ad.email }}){% endif %}</p>
-            </div>
-        {% endfor %}
+    {% for ad in ads %}
+        <div class="ads-card">
+            <h3>{{ ad.title }}</h3>
+            <p>{{ ad.content }}</p>
+            <p class="author">Автор: {{ ad.author }}{% if ad.email %} ({{ ad.email }}){% endif %}</p>
+            
+            {% if session.get('is_admin') %}
+            <form action="{{ url_for('delete_ad', ad_id=ad.id) }}" method="POST" class="inline-form">
+                <button type="submit" class="btn btn-delete">Удалить</button>
+            </form>
+            {% endif %}
+        </div>
+    {% endfor %}
     </div>
 </body>
 </html>

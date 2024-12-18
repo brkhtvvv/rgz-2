@@ -381,3 +381,26 @@ def edit_user(user_id):
 
     db_close(conn, cur)
     return render_template('edit_user.html', user=user)
+
+@app.route('/delete_ad_admin/<int:ad_id>', methods=['POST'])
+def delete_ad_admin(ad_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))  # Пользователь должен быть авторизован
+
+    try:
+        conn, cur = db_connect()
+        
+        # Проверяем, администратор ли пользователь
+        is_admin = session.get('is_admin', False)
+        
+        if is_admin:
+            # Администратор может удалить любое объявление
+            cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
+        else:
+            db_close(conn, cur)
+            return redirect(url_for('main'))  # Если пользователь не администратор, перенаправляем
+
+        db_close(conn, cur)
+        return redirect(url_for('main'))  # Перенаправляем на главную страницу после удаления
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
