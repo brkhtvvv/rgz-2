@@ -191,12 +191,15 @@ def edit_ad(ad_id):
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        
+        # Обновляем существующее объявление
         cur.execute("UPDATE ads SET title=%s, content=%s WHERE id=%s;", (title, content, ad_id))
         db_close(conn, cur)
-        return redirect(url_for('main'))  # Перенаправляем на главную страницу после обновления
+        return redirect(url_for('profile'))  # Перенаправляем на страницу профиля после обновления
 
     db_close(conn, cur)
     return render_template('edit_ad.html', ad=ad)
+
 
 
 
@@ -269,13 +272,21 @@ def profile():
         return redirect(url_for('login'))
 
     conn, cur = db_connect()
+    
+    # Получаем информацию о пользователе
     cur.execute("SELECT * FROM users WHERE id=%s;", (session['user_id'],))
     user = cur.fetchone()
+
+    # Получаем все объявления текущего пользователя
+    cur.execute("""
+        SELECT * FROM ads WHERE user_id=%s;
+    """, (session['user_id'],))
+    ads = cur.fetchall()
+
     db_close(conn, cur)
 
     if user:
-        print(f"User data: {user}")
-        return render_template('profile.html', user=user)
+        return render_template('profile.html', user=user, ads=ads)
     else:
         print("User not found in database")
         return redirect(url_for('login'))
