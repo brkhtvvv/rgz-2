@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Логин: <input type="text" name="login" required></label><br>
+        <label>Пароль: <input type="password" name="password" required></label><br>
+        <label>Полное имя: <input type="text" name="fullname" required></label><br>
+        <label>Email: <input type="email" name="email" required></label><br>
+        <label>О себе: <textarea name="about"></textarea></label><br>
+        <label>Аватарка: <input type="file" name="avatar"></label><br>
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+    <a href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a>
+</body>
+</html>
