@@ -13,7 +13,6 @@ UPLOAD_FOLDER = 'static/avatars'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Database connection
 def db_connect():
     conn = psycopg2.connect(
         host='127.0.0.1',
@@ -29,12 +28,10 @@ def db_close(conn, cur):
     cur.close()
     conn.close()
 
-# ----------------------- User Routes ------------------------
 @app.route('/')
 def main():
     try:
         conn, cur = db_connect()
-        # Если пользователь авторизован, показываем email авторов
         if 'user_id' in session:
             cur.execute("""
                 SELECT ads.id, ads.title, ads.content, users.fullname AS author, users.email
@@ -91,15 +88,13 @@ def login():
         password = request.form['password']
         conn, cur = db_connect()
         try:
-            # Выполняем запрос для получения пользователя по логину
             cur.execute("SELECT * FROM users WHERE login=%s;", (login,))
             user = cur.fetchone()
             db_close(conn, cur)
 
-            # Проверяем, если пользователь найден и пароль правильный
             if user and check_password_hash(user['password'], password):
                 session['user_id'] = user['id']
-                session['is_admin'] = user.get('is_admin', False)  # Понимание, есть ли поле is_admin
+                session['is_admin'] = user.get('is_admin', False)
                 return redirect(url_for('main'))
             else:
                 return render_template('login.html', error='Invalid credentials')
@@ -112,12 +107,11 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.clear()  # Очищаем сессию
+    session.clear()
     return redirect(url_for('main'))
 
 
 
-# ----------------------- Admin Management ------------------------
 @jsonrpc.method('admin.delete_user')
 def delete_user(user_id: int):
     if not session.get('is_admin'):
@@ -133,27 +127,19 @@ if __name__ == '__main__':
 @app.route('/ads')
 def ads():
     try:
-        # Подключаемся к базе данных
         conn, cur = db_connect()
-
-        # Выполняем SQL-запрос для получения списка объявлений и данных об авторах
         cur.execute("""
             SELECT ads.id, ads.title, ads.content, users.fullname AS author, users.email
             FROM ads
             JOIN users ON ads.user_id = users.id;
         """)
         ads = cur.fetchall()
-
-        # Закрываем соединение с базой данных
         db_close(conn, cur)
-
-        # Передаем данные в шаблон
         return render_template('ads.html', ads=ads)
 
     except Exception as e:
         print(f"Error fetching ads: {e}")
         return "Internal Server Error", 500
-
 
 
 @app.route('/create_ad', methods=['GET', 'POST'])
@@ -174,8 +160,6 @@ def create_ad():
     return render_template('create_ad.html')
 
 
-
-
 @app.route('/edit_ad/<int:ad_id>', methods=['GET', 'POST'])
 def edit_ad(ad_id):
     if 'user_id' not in session:
@@ -186,23 +170,18 @@ def edit_ad(ad_id):
     ad = cur.fetchone()
 
     if ad is None or ad['user_id'] != session['user_id']:
-        return redirect(url_for('main'))  # Если это не ваше объявление, перенаправляем
+        return redirect(url_for('main'))  
 
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
         
-        # Обновляем существующее объявление
         cur.execute("UPDATE ads SET title=%s, content=%s WHERE id=%s;", (title, content, ad_id))
         db_close(conn, cur)
-        return redirect(url_for('profile'))  # Перенаправляем на страницу профиля после обновления
+        return redirect(url_for('profile'))
 
     db_close(conn, cur)
     return render_template('edit_ad.html', ad=ad)
-
-
-
-
 
 @app.route('/delete_ad/<int:ad_id>', methods=['POST'])
 def delete_ad(ad_id):
@@ -219,8 +198,6 @@ def delete_ad(ad_id):
     cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
     db_close(conn, cur)
     return redirect(url_for('profile'))
-
-
 
 @jsonrpc.method('ad.create')
 def create_ad_rpc(title: str, content: str):
@@ -273,11 +250,9 @@ def profile():
 
     conn, cur = db_connect()
     
-    # Получаем информацию о пользователе
     cur.execute("SELECT * FROM users WHERE id=%s;", (session['user_id'],))
     user = cur.fetchone()
 
-    # Получаем все объявления текущего пользователя
     cur.execute("""
         SELECT * FROM ads WHERE user_id=%s;
     """, (session['user_id'],))
@@ -306,7 +281,6 @@ def edit_profile():
         about = request.form.get('about', '')
         avatar = request.files.get('avatar')
 
-        # Обновление данных
         if avatar:
             filename = secure_filename(avatar.filename)
             avatar.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -325,7 +299,7 @@ def edit_profile():
 @app.route('/users')
 def users():
     if 'user_id' not in session or not session.get('is_admin'):
-        return redirect(url_for('main'))  # Только администратор может видеть этот список
+        return redirect(url_for('main'))
 
     try:
         conn, cur = db_connect()
@@ -340,7 +314,7 @@ def users():
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     if 'user_id' not in session or not session.get('is_admin'):
-        return redirect(url_for('main'))  # Только администратор может удалять пользователей
+        return redirect(url_for('main'))
 
     try:
         conn, cur = db_connect()
@@ -354,7 +328,7 @@ def delete_user(user_id):
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
 def edit_user(user_id):
     if 'user_id' not in session or not session.get('is_admin'):
-        return redirect(url_for('main'))  # Только администратор может редактировать пользователей
+        return redirect(url_for('main'))
 
     conn, cur = db_connect()
     cur.execute("SELECT * FROM users WHERE id=%s;", (user_id,))
@@ -366,7 +340,6 @@ def edit_user(user_id):
         about = request.form.get('about', '')
         avatar = request.files.get('avatar')
 
-        # Обновление данных пользователя
         if avatar:
             filename = secure_filename(avatar.filename)
             avatar.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -377,7 +350,7 @@ def edit_user(user_id):
                         (fullname, email, about, user_id))
 
         db_close(conn, cur)
-        return redirect(url_for('users'))  # После редактирования возвращаем на страницу пользователей
+        return redirect(url_for('users'))
 
     db_close(conn, cur)
     return render_template('edit_user.html', user=user)
@@ -385,22 +358,19 @@ def edit_user(user_id):
 @app.route('/delete_ad_admin/<int:ad_id>', methods=['POST'])
 def delete_ad_admin(ad_id):
     if 'user_id' not in session:
-        return redirect(url_for('login'))  # Пользователь должен быть авторизован
+        return redirect(url_for('login'))
 
     try:
         conn, cur = db_connect()
-        
-        # Проверяем, администратор ли пользователь
         is_admin = session.get('is_admin', False)
         
         if is_admin:
-            # Администратор может удалить любое объявление
             cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
         else:
             db_close(conn, cur)
-            return redirect(url_for('main'))  # Если пользователь не администратор, перенаправляем
+            return redirect(url_for('main'))
 
         db_close(conn, cur)
-        return redirect(url_for('main'))  # Перенаправляем на главную страницу после удаления
+        return redirect(url_for('main'))
     except Exception as e:
         return f"An error occurred: {str(e)}"
