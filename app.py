@@ -169,7 +169,7 @@ def create_ad():
         conn, cur = db_connect()
         cur.execute("INSERT INTO ads (title, content, user_id) VALUES (%s, %s, %s);", (title, content, user_id))
         db_close(conn, cur)
-        return redirect(url_for('main'))
+        return redirect(url_for('profile'))
 
     return render_template('create_ad.html')
 
@@ -218,7 +218,7 @@ def delete_ad(ad_id):
 
     cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
     db_close(conn, cur)
-    return redirect(url_for('main'))
+    return redirect(url_for('profile'))
 
 
 

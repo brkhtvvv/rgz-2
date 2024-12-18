@@ -8,14 +8,16 @@
 </head>
 <body>
     <header>
-        <h1>Добро пожаловать на сайт объявлений</h1>
+        <h1>Объявления RU</h1>
     </header>
 
     <div class="container">
         <nav>
             <a href="{{ url_for('main') }}">Главная</a>
+            {% if 'user_id' not in session %}
             <a href="{{ url_for('register') }}">Регистрация</a>
             <a href="{{ url_for('login') }}">Вход</a>
+            {% endif %}
             {% if 'user_id' in session %}
                 <a href="{{ url_for('profile') }}">Профиль</a>
                 <a href="{{ url_for('logout') }}">Выход</a>
