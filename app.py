@@ -192,9 +192,6 @@ def delete_ad(ad_id):
     cur.execute("SELECT * FROM ads WHERE id=%s;", (ad_id,))
     ad = cur.fetchone()
 
-    if ad is None or ad['user_id'] != session['user_id']:
-        return redirect(url_for('main'))
-
     cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
     db_close(conn, cur)
     return redirect(url_for('profile'))
@@ -234,9 +231,6 @@ def delete_ad_rpc(ad_id: int):
     conn, cur = db_connect()
     cur.execute("SELECT * FROM ads WHERE id=%s;", (ad_id,))
     ad = cur.fetchone()
-
-    if ad is None or ad['user_id'] != session['user_id']:
-        return {'error': 'Unauthorized'}
 
     cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
     db_close(conn, cur)
@@ -355,22 +349,36 @@ def edit_user(user_id):
     db_close(conn, cur)
     return render_template('edit_user.html', user=user)
 
+
 @app.route('/delete_ad_admin/<int:ad_id>', methods=['POST'])
 def delete_ad_admin(ad_id):
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Пользователь должен быть авторизован
 
     try:
         conn, cur = db_connect()
+
+        # Проверяем, администратор ли пользователь
         is_admin = session.get('is_admin', False)
         
         if is_admin:
+            # Администратор может удалить любое объявление
             cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
         else:
-            db_close(conn, cur)
-            return redirect(url_for('main'))
+            # Если пользователь не администратор, проверяем, является ли он владельцем объявления
+            cur.execute("SELECT * FROM ads WHERE id=%s;", (ad_id,))
+            ad = cur.fetchone()
+
+            if ad and ad['user_id'] == session['user_id']:
+                # Если объявление принадлежит текущему пользователю, удаляем его
+                cur.execute("DELETE FROM ads WHERE id=%s;", (ad_id,))
+            else:
+                # Если это не ваше объявление, перенаправляем на главную страницу
+                db_close(conn, cur)
+                return redirect(url_for('main'))
 
         db_close(conn, cur)
-        return redirect(url_for('main'))
+        return redirect(url_for('main'))  # Перенаправляем на главную страницу после удаления
     except Exception as e:
+        db_close(conn, cur)
         return f"An error occurred: {str(e)}"
