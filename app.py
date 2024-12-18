@@ -322,3 +322,62 @@ def edit_profile():
     db_close(conn, cur)
     return render_template('edit_profile.html', user=user)
 
+@app.route('/users')
+def users():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('main'))  # Только администратор может видеть этот список
+
+    try:
+        conn, cur = db_connect()
+        cur.execute("SELECT * FROM users;")
+        users = cur.fetchall()
+        db_close(conn, cur)
+        return render_template('users.html', users=users)
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+    
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('main'))  # Только администратор может удалять пользователей
+
+    try:
+        conn, cur = db_connect()
+        cur.execute("DELETE FROM users WHERE id=%s;", (user_id,))
+        db_close(conn, cur)
+        return redirect(url_for('users'))
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('main'))  # Только администратор может редактировать пользователей
+
+    conn, cur = db_connect()
+    cur.execute("SELECT * FROM users WHERE id=%s;", (user_id,))
+    user = cur.fetchone()
+
+    if request.method == 'POST':
+        fullname = request.form['fullname']
+        email = request.form['email']
+        about = request.form.get('about', '')
+        avatar = request.files.get('avatar')
+
+        # Обновление данных пользователя
+        if avatar:
+            filename = secure_filename(avatar.filename)
+            avatar.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            cur.execute("UPDATE users SET fullname=%s, email=%s, about=%s, avatar=%s WHERE id=%s;",
+                        (fullname, email, about, filename, user_id))
+        else:
+            cur.execute("UPDATE users SET fullname=%s, email=%s, about=%s WHERE id=%s;",
+                        (fullname, email, about, user_id))
+
+        db_close(conn, cur)
+        return redirect(url_for('users'))  # После редактирования возвращаем на страницу пользователей
+
+    db_close(conn, cur)
+    return render_template('edit_user.html', user=user)

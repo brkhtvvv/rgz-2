@@ -1,0 +1,39 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('main') }}">Главная</a></li>
+                <li><a href="{{ url_for('create_ad') }}">Создать объявление</a></li>
+                {% if session.get('is_admin') %}
+                    <li><a href="{{ url_for('users') }}">Пользователи</a></li>
+                {% endif %}
+                {% if 'user_id' in session %}
+                    <li><a href="{{ url_for('profile') }}">Профиль</a></li>
+                    <li><a href="{{ url_for('logout') }}">Выход</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Войти</a></li>
+                    <li><a href="{{ url_for('register') }}">Регистрация</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Knowledge Base</p>
+    </footer>
+</body>
+</html>
