@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Войти</title>
+    <title>Мой профиль</title>
     <style>
         /* Общие стили для сайта */
         body {
@@ -27,7 +27,7 @@
         }
 
         header h1 {
-            margin: 50;
+            margin: 0;
             font-size: 2em;
         }
 
@@ -47,7 +47,52 @@
             color: #007bff;
         }
 
-        /* Стили для карточек объявлений */
+        /* Стили для профиля */
+        .profile-card {
+            background-color: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-card img {
+            border-radius: 50%;
+            width: 150px; /* Увеличен размер аватарки */
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .profile-card .profile-info {
+            color: #666;
+        }
+
+        .profile-card h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-top: 0;
+        }
+
+        .profile-card p {
+            margin: 5px 0;
+        }
+
+        .profile-card a {
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .profile-card a:hover {
+            color: #0056b3;
+        }
+
+        /* Стили для объявлений */
         .ads-card {
             background-color: white;
             padding: 20px;
@@ -65,65 +110,33 @@
             color: #666;
         }
 
-        .ads-card .author {
-            font-size: 0.9em;
+        .ads-card a {
             color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
         }
 
-        /* Стили для форм */
-        form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .ads-card a:hover {
+            color: #0056b3;
         }
 
-        form input, form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
+        .ads-card form {
+            display: inline;
         }
 
-        form button {
+        .ads-card button {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border: none;
             border-radius: 4px;
-            font-size: 1.1em;
             cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
         }
 
-        form button:hover {
+        .ads-card button:hover {
             background-color: #0056b3;
-        }
-
-        /* Стили для профиля */
-        .profile-card {
-            background-color: white;
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .profile-card img {
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-        }
-
-        .profile-card h2 {
-            font-size: 1.8em;
-            color: #333;
-        }
-
-        .profile-card p {
-            color: #666;
         }
 
         /* Адаптивность */
@@ -139,12 +152,55 @@
             nav {
                 font-size: 0.9em;
             }
+
+            .profile-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-card img {
+                width: 120px;
+                height: 120px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Мой профиль</h1>
+    <div class="container">
+        <header>
+            <h1>Мой профиль</h1>
+        </header>
+        <div class="profile-card">
+            <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}" alt="Avatar">
+            <div class="profile-info">
+                <p><strong>Логин:</strong> {{ user.login }}</p>
+                <p><strong>Полное имя:</strong> {{ user.fullname }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>О себе:</strong> {{ user.about }}</p>
+                <a href="{{ url_for('edit_profile') }}">Изменить</a>
+                <br>
+                <a href="{{ url_for('main') }}">На главную</a>
+            </div>
+        </div>
 
-
+        <h2>My Ads</h2>
+        <ul>
+            {% for ad in ads %}
+                <li>
+                    <strong>{{ ad.title }}</strong><br>
+                    {{ ad.content }}<br>
+                    <a href="{{ url_for('edit_ad', ad_id=ad.id) }}">Edit</a> | 
+                    <form action="{{ url_for('delete_ad', ad_id=ad.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </li>
+            {% else %}
+                <li>No ads yet.</li>
+            {% endfor %}
+        </ul>
+    
+        <a href="{{ url_for('create_ad') }}">Create New Ad</a>
+    </div>
 </body>
 </html>
