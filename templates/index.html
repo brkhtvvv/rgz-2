@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+</head>
+<body>
+    <h1>User List</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Login</th>
+            <th>Fullname</th>
+            <th>Email</th>
+            <th>About</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user['id'] }}</td>
+            <td>{{ user['login'] }}</td>
+            <td>{{ user['fullname'] }}</td>
+            <td>{{ user['email'] }}</td>
+            <td>{{ user['about'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Add New User</h2>
+    <form action="/add" method="post">
+        <input type="text" name="login" placeholder="Login" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <input type="text" name="fullname" placeholder="Fullname" required><br>
+        <input type="email" name="email" placeholder="Email" required><br>
+        <textarea name="about" placeholder="About"></textarea><br>
+        <button type="submit">Add User</button>
+    </form>
+</body>
+</html>
